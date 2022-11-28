@@ -1,12 +1,6 @@
 import argparse
 from multiprocessing import Pool
-
-def isPrime(x):
-    for i in range(2, int(x / 2)):
-        if (x % i) == 0:
-            return False
-    return True
-
+import time
 
 def main():
     argumentParse = argparse.ArgumentParser(prog='Concepts Project', description =
@@ -22,13 +16,13 @@ def main():
         raise Exception("Threads cannot be zero or negative")
     processPool = Pool(processes=threads)
     poolData = list()
-    for line in input_file:
+    for (line) in input_file:
+        line = line[:-1]
         array.append(list(line))
     height = len(array) - 1
-    width = len(array[0]) - 1
+    width = len(array[0])
     print(height, width)
     count = 100
-
     for rowIndex in range(height):
         subArray = list()
         subArray.append(array[(rowIndex-1)%height])
@@ -36,23 +30,22 @@ def main():
         subArray.append(array[(rowIndex + 1) % height])
         poolData.append(subArray)
     while count != 0:
-        nextArray = processPool.map(rowCheck,poolData, width, height)
+        nextArray = processPool.map(rowCheck , poolData)
         for i in range(height):
             poolData[i][0] = nextArray[(i - 1)%height]
             poolData[i][1] = nextArray[i]
             poolData[i][2] = nextArray[(i + 1) % height]
+        count = count-1
     output_file = open(commandLineArgs.outputFile, 'w')
     for i in range(height):
         for j in range(width):
             output_file.write(nextArray[i][j])
         output_file.write('\n')
 
-
-
-def rowCheck(array, width, length):
+def rowCheck(array):
     i=1
-
-    nextArray=[]
+    width = len(array[0])
+    nextArray=[None]*width
     for j in range(width):
         neighbor_sum = 0
         up = (i - 1)
@@ -75,24 +68,20 @@ def rowCheck(array, width, length):
             neighbor_sum += 1
         if array[down][right] == '+':
             neighbor_sum += 1
-        # print(neighbor_sum)
-        # print(array[up][left],array[up][j],array[up][right])
-        # print(array[i][left]," ",array[i][right])
-        # print(i,left)
-        # print(array[down][left],array[down][j],array[down][right])
         if array[i][j] == '+':
             if neighbor_sum == 0 or (neighbor_sum % 2) == 1 or neighbor_sum == 8:
-                # print("Killing\n")
-                nextArray[i] = '-'
+                nextArray[j] = '-'
             else:
-                nextArray[i] = '+'
-        elif array[i][j] == '-' and (
-                neighbor_sum == 2 or neighbor_sum == 3 or neighbor_sum == 5 or neighbor_sum == 7):
-            # print("Aliving\n")
-            nextArray[i] = '+'
+                nextArray[j] = '+'
+        elif array[i][j] == '-' and (neighbor_sum == 2 or neighbor_sum == 3 or neighbor_sum == 5 or neighbor_sum == 7):
+            nextArray[j] = '+'
         else:
-            nextArray[i] = '-'
+            nextArray[j] = '-'
     return nextArray
 
 if __name__ == "__main__":
+    st = time.time()
+    print("Project :: R11702155")
     main()
+    end = time.time()
+    print(end-st)
